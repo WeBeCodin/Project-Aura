@@ -1,0 +1,34 @@
+version: 3.1
+updated: 2025-10-29
+
+context:
+  always_load:
+    - specs/aura-global.spec.md
+    - specs/aura-au-exclusive.spec.md
+    - specs/aura-au-impact.spec.md
+    - .github/workflows/supercharger.yml
+    - prisma/schema.prisma
+    - mockups/dashboard.fig.png
+
+  always_consider:
+    - production_deployment: Vercel
+    - database: PostgreSQL with Prisma
+    - crawling_engine: Python (Scrapy)
+    - testing: Jest + Playwright
+    - monitoring: Sentry
+    - visual_validation: Playwright MCP
+
+never_suggest:
+  - localhost_only_solutions
+  - manual_testing_as_primary
+  - code_without_tests
+  - hardcoding job listings
+  - CSS-in-JS (Per project decision for standard CSS Modules)
+  - console.log_for_debugging
+
+quality_requirements:
+  - typescript_strict_mode: true
+  - test_coverage: 80% unit
+  - e2e_critical_paths: 100% (Search, Filter, AU-Hub)
+  - spec_compliance: 100%
+  - visual_compliance: 100% pixel-perfect to spec

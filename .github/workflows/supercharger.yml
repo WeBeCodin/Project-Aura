@@ -1,0 +1,116 @@
+name: Supercharger Validation Pipeline
+on: [push, pull_request]
+
+jobs:
+  specification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Validate Spec Files Exist
+        run: |
+          test -f specs/aura-global.spec.md
+          test -f specs/aura-au-exclusive.spec.md
+          test -f specs/aura-au-impact.spec.md
+          echo "✓ All specification files validated"
+
+  types:
+    needs: specification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Generate Prisma Types
+        run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+
+  tests:
+    needs: types
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run Unit Tests
+        run: npm run test:unit
+        
+      - name: Run Integration Tests
+        run: npm run test:integration
+
+  visual_regression:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+        
+      - name: Start Dev Server
+        run: npm run dev &
+        env:
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+          
+      - name: Wait for Server
+        run: npx wait-on http://localhost:3000
+        
+      - name: Run E2E & Visual Tests
+        run: npx playwright test
+        
+      - name: Upload Screenshots on Failure
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: visual-diff-screenshots
+          path: test-results/
+
+  deploy_preview:
+    needs: visual_regression
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Deploy Preview to Vercel
+        run: echo "Vercel deployment would occur here with proper credentials"

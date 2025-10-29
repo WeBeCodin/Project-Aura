@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model JobListing {
+  id          String   @id @default(cuid())
+  title       String
+  company     String
+  description String   @db.Text
+  location    String
+  locationType LocationType
+  jobType     JobType
+  category    JobCategory
+  vibeScore   Int?
+  source      String
+  sourceUrl   String
+  tags        String[]
+  isActive    Boolean  @default(true)
+  isAuOnly    Boolean  @default(false)
+  isImpactHub Boolean  @default(false)
+  postedAt    DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([locationType])
+  @@index([isAuOnly])
+  @@index([isImpactHub])
+  @@index([postedAt])
+}
+
+enum LocationType {
+  REMOTE_GLOBAL
+  HYBRID
+  ONSITE
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCE
+  TENDER
+  GRANT
+}
+
+enum JobCategory {
+  AI_ML_ENGINEERING
+  VIBE_CODING
+  AI_CORPORATE_TRAINING
+  AI_GOVERNANCE
+  AI_IMPLEMENTATION
+  OTHER
+}
