@@ -95,13 +95,13 @@ Choose a PostgreSQL provider and create a new database:
 
 3. **Set Build Settings**
    
-   Vercel should auto-detect Next.js. Verify these settings:
+   Vercel should auto-detect Next.js. The default settings should work, but you can verify:
    - **Framework Preset**: Next.js
-   - **Build Command**: `npm run build` (or leave empty to use default)
-   - **Output Directory**: `.next` (or leave empty to use default)
-   - **Install Command**: `npm install` (or leave empty to use default)
+   - **Build Command**: `npm run build` (default, can be left empty)
+   - **Output Directory**: `.next` (default, can be left empty)
+   - **Install Command**: `npm install` (default, can be left empty)
 
-   **Note**: The build process automatically includes:
+   **Note**: The `vercel.json` file in the repository specifies custom build commands to ensure Prisma Client generation. These will override Vercel's defaults:
    - `postinstall` script runs `prisma generate` after npm install
    - `build` script runs `prisma generate && next build`
    - This ensures Prisma Client is always generated before building
@@ -292,12 +292,19 @@ npx prisma generate
 # Connect to your production database
 export DATABASE_URL="your-production-database-url"
 
-# Apply migrations
+# Check migration status
+npx prisma migrate status
+
+# Apply pending migrations
 npx prisma migrate deploy
 
-# Verify schema is up to date
-npx prisma db push --accept-data-loss  # Use with caution!
+# If migrations are out of sync, resolve conflicts locally first:
+# 1. Fix migration conflicts on dev environment
+# 2. Create a new migration if needed
+# 3. Test thoroughly before deploying to production
 ```
+
+**Warning**: Never use `prisma db push --accept-data-loss` on production databases as it can permanently delete data.
 
 ### API Errors
 
