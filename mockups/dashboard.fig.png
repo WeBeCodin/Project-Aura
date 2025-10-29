@@ -1,0 +1,32 @@
+# Dashboard Visual Specification
+
+This file represents the visual specification for the Project Aura dashboard.
+
+In a production environment, this would be a Figma export or design mockup that the Playwright MCP would use for visual regression testing.
+
+## Key Visual Elements:
+
+1. **Header**: Project Aura branding with gradient (blue to purple)
+2. **Search Bar**: Prominent search with modern styling
+3. **Filters**: Category dropdown, vibe score slider, AU-exclusive toggle
+4. **Job Cards**: Clean card layout with:
+   - Job title (prominent)
+   - Company name
+   - Location badge
+   - Category badge
+   - Vibe score badge (green)
+   - Description preview
+   - Source and date footer
+
+## Color Palette:
+- Primary Blue: #2563eb
+- Primary Purple: #7c3aed
+- Success Green: #10b981
+- Warning Orange: #d97706
+- Neutral Gray: #6b7280
+- Background: #f9fafb
+
+## Typography:
+- Headings: Bold, modern sans-serif
+- Body: Regular sans-serif
+- Consistent spacing and hierarchy
