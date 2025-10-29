@@ -2,6 +2,20 @@
 
 This guide covers deploying Project Aura to production using Vercel and PostgreSQL.
 
+## Quick Start (TL;DR)
+
+To deploy immediately to Vercel:
+
+1. **Import to Vercel**: Go to [vercel.com/new](https://vercel.com/new) and import your GitHub repository
+2. **Add Environment Variables** in Vercel dashboard:
+   - `DATABASE_URL`: Your PostgreSQL connection string
+   - `JWT_SECRET`: A secure random string (min 32 characters)
+   - `NEXT_PUBLIC_API_URL`: Your Vercel app URL (e.g., `https://your-app.vercel.app`)
+3. **Deploy**: Vercel will automatically build and deploy your app
+4. **Initialize Database**: Run `npx prisma migrate deploy` with your production DATABASE_URL
+
+That's it! The build process automatically handles Prisma Client generation via the `postinstall` hook.
+
 ## Prerequisites
 
 - [Vercel Account](https://vercel.com)
@@ -81,11 +95,16 @@ Choose a PostgreSQL provider and create a new database:
 
 3. **Set Build Settings**
    
-   Vercel should auto-detect Next.js. Verify these settings:
+   Vercel should auto-detect Next.js. The default settings should work, but you can verify:
    - **Framework Preset**: Next.js
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `.next`
-   - **Install Command**: `npm install`
+   - **Build Command**: `npm run build` (default, can be left empty)
+   - **Output Directory**: `.next` (default, can be left empty)
+   - **Install Command**: `npm install` (default, can be left empty)
+
+   **Note**: The `vercel.json` file in the repository specifies custom build commands to ensure Prisma Client generation. These will override Vercel's defaults:
+   - `postinstall` script runs `prisma generate` after npm install
+   - `build` script runs `prisma generate && next build`
+   - This ensures Prisma Client is always generated before building
 
 ### 3. Initialize Database
 
@@ -95,15 +114,14 @@ Run database migrations on your production database:
 # Set DATABASE_URL for production
 export DATABASE_URL="your-production-database-url"
 
-# Generate Prisma client
-npx prisma generate
-
-# Run migrations
+# Run migrations (this will create all tables and enums)
 npx prisma migrate deploy
 
 # Optional: Seed with sample data
 npm run prisma:seed
 ```
+
+**Important**: Do NOT run `prisma migrate dev` on production. Always use `prisma migrate deploy` for production deployments.
 
 ### 4. Deploy to Production
 
@@ -243,17 +261,50 @@ npx prisma generate
 npm run build
 ```
 
+**Error: Prisma Client not generated**
+This should not happen if you've followed the setup correctly, as the `postinstall` script automatically generates Prisma Client. However, if it does:
+```bash
+# Ensure postinstall script is in package.json
+npm run postinstall
+# Or manually generate
+npx prisma generate
+```
+
+**Error: Cannot find module '@prisma/client'**
+- Verify `@prisma/client` is in dependencies (not devDependencies)
+- Ensure `postinstall` script runs `prisma generate`
+- Check that DATABASE_URL environment variable is set in Vercel
+
 ### Database Connection Issues
 
 **Error: Connection timeout**
-- Verify DATABASE_URL is correct
+- Verify DATABASE_URL is correct in Vercel environment variables
 - Check firewall rules allow Vercel IP ranges
-- Use connection pooling endpoint
+- Use connection pooling endpoint (e.g., Supabase transaction pooling)
 
 **Error: Too many connections**
-- Enable connection pooling
-- Reduce connection limits in Prisma schema
-- Use database provider's pooling feature
+- Enable connection pooling in your DATABASE_URL
+- Use database provider's connection pooling feature
+- For Supabase: Use the "Transaction" mode connection string
+
+**Error: Database migrations not applied**
+```bash
+# Connect to your production database
+export DATABASE_URL="your-production-database-url"
+
+# Check migration status
+npx prisma migrate status
+
+# Apply pending migrations
+npx prisma migrate deploy
+
+# If migrations are out of sync, resolve conflicts locally first:
+# 1. Fix migration conflicts on dev environment
+# 2. Create a new migration if needed
+# 3. Test thoroughly before deploying to production
+```
+
+**Warning**: Never use `prisma db push --accept-data-loss` on production databases as it can permanently delete data.
 
 ### API Errors
 
