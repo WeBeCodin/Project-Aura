@@ -14,6 +14,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchJobs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category, vibeScore, auExclusive]);
 
   const fetchJobs = async () => {

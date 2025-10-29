@@ -10,6 +10,7 @@ export default function ImpactHub() {
 
   useEffect(() => {
     fetchOpportunities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   const fetchOpportunities = async () => {
