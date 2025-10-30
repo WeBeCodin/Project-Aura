@@ -39,14 +39,10 @@ export default async function handler(
     }
 
     if (search) {
-      where.AND = [
-        {
-          OR: [
-            { title: { contains: search as string, mode: 'insensitive' } },
-            { description: { contains: search as string, mode: 'insensitive' } },
-            { company: { contains: search as string, mode: 'insensitive' } },
-          ],
-        },
+      where.OR = [
+        { title: { contains: search as string, mode: 'insensitive' } },
+        { description: { contains: search as string, mode: 'insensitive' } },
+        { company: { contains: search as string, mode: 'insensitive' } },
       ];
     }
 
