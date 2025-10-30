@@ -74,6 +74,39 @@ export default async function handler(
     });
   } catch (error) {
     console.error('Error in /api/jobs/au-exclusive:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    
+    // Provide more detailed error information in development
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    // Check for common database errors
+    if (errorMessage.includes('DATABASE_URL')) {
+      console.error('DATABASE_URL environment variable is not set or is invalid');
+      return res.status(500).json({ 
+        error: 'Database configuration error',
+        ...(isDevelopment && { details: 'DATABASE_URL is not configured. Please set the DATABASE_URL environment variable.' })
+      });
+    }
+    
+    if (errorMessage.includes('PrismaClient')) {
+      console.error('Prisma Client initialization error');
+      return res.status(500).json({ 
+        error: 'Database client error',
+        ...(isDevelopment && { details: 'Prisma Client may not be properly generated. Run: npx prisma generate' })
+      });
+    }
+    
+    if (errorMessage.includes('connect') || errorMessage.includes('ECONNREFUSED')) {
+      console.error('Database connection error');
+      return res.status(500).json({ 
+        error: 'Database connection error',
+        ...(isDevelopment && { details: 'Cannot connect to database. Check DATABASE_URL and database availability.' })
+      });
+    }
+    
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      ...(isDevelopment && { details: errorMessage })
+    });
   }
 }
