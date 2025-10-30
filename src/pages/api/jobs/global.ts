@@ -23,28 +23,35 @@ export default async function handler(
     const limitNum = parseInt(limit as string, 10);
     const skip = (pageNum - 1) * limitNum;
 
-    const where: any = {
-      isActive: true,
-      locationType: LocationType.REMOTE_GLOBAL,
-    };
+    const where: any = {};
+    const andConditions: any[] = [
+      { isActive: true },
+      { locationType: LocationType.REMOTE_GLOBAL },
+    ];
 
     if (category) {
-      where.category = category as JobCategory;
+      andConditions.push({ category: category as JobCategory });
     }
 
     if (vibeScore) {
-      where.vibeScore = {
-        gte: parseInt(vibeScore as string, 10),
-      };
+      andConditions.push({
+        vibeScore: {
+          gte: parseInt(vibeScore as string, 10),
+        },
+      });
     }
 
     if (search) {
-      where.OR = [
-        { title: { contains: search as string, mode: 'insensitive' } },
-        { description: { contains: search as string, mode: 'insensitive' } },
-        { company: { contains: search as string, mode: 'insensitive' } },
-      ];
+      andConditions.push({
+        OR: [
+          { title: { contains: search as string, mode: 'insensitive' } },
+          { description: { contains: search as string, mode: 'insensitive' } },
+          { company: { contains: search as string, mode: 'insensitive' } },
+        ],
+      });
     }
+
+    where.AND = andConditions;
 
     const [jobs, total] = await Promise.all([
       prisma.jobListing.findMany({
