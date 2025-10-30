@@ -20,14 +20,8 @@ export default async function handler(
 ) {
   if (req.method !== 'GET') {
     return res.status(405).json({ 
-      status: 'unhealthy',
-      timestamp: new Date().toISOString(),
-      database: { connected: false, error: 'Method not allowed' },
-      environment: {
-        hasDatabaseUrl: false,
-        nodeEnv: process.env.NODE_ENV || 'unknown'
-      }
-    });
+      error: 'Method not allowed' 
+    } as any);
   }
 
   const hasDatabaseUrl = !!process.env.DATABASE_URL;

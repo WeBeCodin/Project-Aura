@@ -18,6 +18,23 @@ jest.mock('../../lib/prisma', () => ({
   },
 }));
 
+// Mock the error handler to avoid console.error in tests
+jest.mock('../../lib/apiErrorHandler', () => ({
+  handleApiError: jest.fn((error, res, endpointName) => {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    if (errorMessage.includes('DATABASE_URL')) {
+      res.status(500).json({ error: 'Database configuration error' });
+    } else if (errorMessage.includes('PrismaClient')) {
+      res.status(500).json({ error: 'Database client error' });
+    } else if (errorMessage.includes('connect') || errorMessage.includes('ECONNREFUSED')) {
+      res.status(500).json({ error: 'Database connection error' });
+    } else {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }),
+}));
+
 import { prisma } from '../../lib/prisma';
 
 describe('API /api/jobs/global', () => {
