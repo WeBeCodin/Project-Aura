@@ -42,10 +42,14 @@ export default async function handler(
     }
 
     if (search) {
-      where.OR = [
-        { title: { contains: search as string, mode: 'insensitive' } },
-        { description: { contains: search as string, mode: 'insensitive' } },
-        { company: { contains: search as string, mode: 'insensitive' } },
+      where.AND = [
+        {
+          OR: [
+            { title: { contains: search as string, mode: 'insensitive' } },
+            { description: { contains: search as string, mode: 'insensitive' } },
+            { company: { contains: search as string, mode: 'insensitive' } },
+          ],
+        },
       ];
     }
 
@@ -68,6 +72,7 @@ export default async function handler(
       pages,
     });
   } catch (error) {
+    console.error('Error in /api/jobs/au-exclusive:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
