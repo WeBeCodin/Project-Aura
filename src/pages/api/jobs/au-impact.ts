@@ -64,6 +64,7 @@ export default async function handler(
       pages,
     });
   } catch (error) {
+    console.error('Error in /api/jobs/au-impact:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
