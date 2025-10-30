@@ -24,34 +24,35 @@ export default async function handler(
     const limitNum = parseInt(limit as string, 10);
     const skip = (pageNum - 1) * limitNum;
 
-    const where: any = {
-      isActive: true,
-      isAuOnly: true,
-    };
+    const where: any = {};
+    const andConditions: any[] = [
+      { isActive: true },
+      { isAuOnly: true },
+    ];
 
     if (locationType) {
-      where.locationType = locationType as LocationType;
+      andConditions.push({ locationType: locationType as LocationType });
     }
 
     if (category) {
-      where.category = category as JobCategory;
+      andConditions.push({ category: category as JobCategory });
     }
 
     if (city) {
-      where.location = { contains: city as string, mode: 'insensitive' };
+      andConditions.push({ location: { contains: city as string, mode: 'insensitive' } });
     }
 
     if (search) {
-      where.AND = [
-        {
-          OR: [
-            { title: { contains: search as string, mode: 'insensitive' } },
-            { description: { contains: search as string, mode: 'insensitive' } },
-            { company: { contains: search as string, mode: 'insensitive' } },
-          ],
-        },
-      ];
+      andConditions.push({
+        OR: [
+          { title: { contains: search as string, mode: 'insensitive' } },
+          { description: { contains: search as string, mode: 'insensitive' } },
+          { company: { contains: search as string, mode: 'insensitive' } },
+        ],
+      });
     }
+
+    where.AND = andConditions;
 
     const [jobs, total] = await Promise.all([
       prisma.jobListing.findMany({
