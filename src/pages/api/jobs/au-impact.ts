@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '@/lib/prisma';
 import { JobType } from '@/types';
+import { handleApiError } from '@/lib/apiErrorHandler';
 
 export default async function handler(
   req: NextApiRequest,
@@ -64,7 +65,6 @@ export default async function handler(
       pages,
     });
   } catch (error) {
-    console.error('Error in /api/jobs/au-impact:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    handleApiError(error, res, '/api/jobs/au-impact');
   }
 }
